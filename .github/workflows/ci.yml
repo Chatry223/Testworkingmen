@@ -9,3 +9,4 @@ jobs:
      with: {node-version: 22}
    - run: npm install
    - run: npm test
+   - run: node --check src/index.js && node --check src/proxy.js && node --check relay/server.js
