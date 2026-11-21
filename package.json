@@ -1,12 +1,20 @@
 {
   "name": "volveedge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "db:migrate": "wrangler d1 migrations apply DB --remote",
+    "deploy": "npm run db:migrate && wrangler deploy"
+  },
+  "cloudflare": {
+    "bindings": {
+      "ADMIN_TOKEN": {
+        "description": "Secret used to access the Persian admin panel. Generate a long random token and keep it private. It is stored as a Worker secret, not in the repository."
+      }
+    }
   },
   "devDependencies": {
     "wrangler": "^4.45.0"
