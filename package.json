@@ -1,13 +1,13 @@
 {
   "name": "volveedge",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "dev": "wrangler dev",
     "db:migrate": "wrangler d1 migrations apply DB --remote",
-    "deploy": "npm run db:migrate && wrangler deploy"
+    "deploy": "wrangler deploy && npm run db:migrate"
   },
   "cloudflare": {
     "bindings": {
