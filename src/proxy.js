@@ -1,38 +1,12 @@
 import { connect } from "cloudflare:sockets";
 import { parseVlessHeader } from "./protocol/vless.js";
-
-function isBlockedIp(ip) {
-  const value=ip.toLowerCase();
-  const parts=value.split(".");
-  if(parts.length===4&&parts.every(p=>/^\d{1,3}$/.test(p)&&Number(p)<=255)){
-    const [a,b,c]=parts.map(Number);
-    return a===0||a===10||a===127||a>=224||
-      (a===100&&b>=64&&b<=127)||(a===169&&b===254)||
-      (a===172&&b>=16&&b<=31)||(a===192&&(b===0||b===168||b===88&&c===99))||
-      (a===198&&(b===18||b===19||b===51&&c===100))||
-      (a===203&&b===0&&c===113);
-  }
-  if(value.includes(":")){
-    return value==="::"||value==="::1"||value.startsWith("fc")||
-      value.startsWith("fd")||/^fe[89ab]/.test(value)||value.startsWith("ff")||
-      value.startsWith("2001:db8:")||value.startsWith("2001:10:")||value.startsWith("2002:")||value.startsWith("::ffff:");
-  }
-  return false;
-}
-
-function isBlockedDestination(host,port) {
-  const value=host.toLowerCase().replace(/^\[|\]$/g,"");
-  if(["localhost","localhost.localdomain"].includes(value)||
-     value.endsWith(".localhost")||value.endsWith(".local")||
-     value.endsWith(".internal")||value.endsWith(".test")||
-     value.endsWith(".invalid")||value.endsWith(".example"))return true;
-  if(isBlockedIp(value))return true;
-  if([25,135,137,138,139,445].includes(port))return true;
-  return false;
-}
+import { isBlockedIp, isBlockedDestination } from "./ip-policy.js";
 
 async function resolvePublic(host) {
-  if(/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)||host.includes(":"))return host;
+  if(/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)||host.includes(":")){
+    if(isBlockedIp(host))throw new Error("Private or reserved destination is blocked");
+    return host;
+  }
   const answers=[];
   for(const type of ["A","AAAA"]){
     const endpoint=new URL("https://cloudflare-dns.com/dns-query");
