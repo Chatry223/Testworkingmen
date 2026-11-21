@@ -3,12 +3,10 @@ export function json(data,status=200,headers={}) {
  return new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store",...headers}});
 }
 export function cors(request, response) {
- // Cloudflare WebSocket upgrade responses (101) carry a webSocket endpoint.
- // Re-wrapping them with the standard Response constructor breaks the upgrade.
  if (response.status === 101) return response;
- const origin=request.headers.get("Origin")||"*";
+ const origin=request.headers.get("Origin");
  const h=new Headers(response.headers);
- h.set("access-control-allow-origin",origin);
+ if (origin) h.set("access-control-allow-origin",origin);
  h.set("vary","Origin");
  h.set("access-control-allow-methods","GET,POST,DELETE,OPTIONS");
  h.set("access-control-allow-headers","content-type,authorization");
@@ -24,6 +22,6 @@ export function secureEqual(a,b) {
 }
 export function uuid(){return crypto.randomUUID();}
 export function requireAdmin(request,env) {
- const token=(request.headers.get("authorization")||"").replace(/^Bearer\\s+/i,"");
+ const token=(request.headers.get("authorization")||"").replace(/^Bearer\s+/i,"");
  return !!env.ADMIN_TOKEN && secureEqual(token,env.ADMIN_TOKEN);
 }
