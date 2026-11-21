@@ -19,7 +19,12 @@ function singBoxConfig(host,user,relayUrl) {
   outbounds.push({type:"urltest",tag:"auto",outbounds:["cloudflare","vps-relay"],url:"https://www.gstatic.com/generate_204",interval:"2m",tolerance:150,interrupt_exist_connections:true});
   final="auto";
  }
- return {log:{level:"warn"},outbounds,route:{final}};
+ return {
+  log:{level:"warn"},
+  inbounds:[{type:"mixed",tag:"local-proxy",listen:"127.0.0.1",listen_port:2080}],
+  outbounds:[...outbounds,{type:"direct",tag:"direct"},{type:"block",tag:"block"}],
+  route:{auto_detect_interface:true,final}
+ };
 }
 
 export default {
@@ -30,13 +35,16 @@ export default {
   if(url.pathname==="/api/relay/verify")response=await verifyRelay(request,env);
   else if(url.pathname.startsWith("/api/admin/"))response=await adminApi(request,env,url);
   else if(url.pathname.startsWith("/sub/")){
-   const id=decodeURIComponent(url.pathname.slice(5));
-   const user=await subscription(env,id);
-   if(!user)response=new Response("Subscription not found",{status:404});
-   else try{if(env.RELAY_URL&&!env.RELAY_SHARED_SECRET)throw new Error("RELAY_SHARED_SECRET is required when RELAY_URL is configured");response=new Response(JSON.stringify(singBoxConfig(url.hostname,user,env.RELAY_URL),null,2),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","content-disposition":'attachment; filename="volveedge-sing-box.json"'}});}
-   catch(error){response=json({error:error.message},503);}
+   let id;
+   try{id=decodeURIComponent(url.pathname.slice(5));}catch{response=new Response("Invalid subscription identifier",{status:400});}
+   if(id){
+    const user=await subscription(env,id);
+    if(!user)response=new Response("Subscription not found",{status:404});
+    else try{if(env.RELAY_URL&&!env.RELAY_SHARED_SECRET)throw new Error("RELAY_SHARED_SECRET is required when RELAY_URL is configured");response=new Response(JSON.stringify(singBoxConfig(url.hostname,user,env.RELAY_URL),null,2),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","content-disposition":'attachment; filename="volveedge-sing-box.json"'}});}
+    catch(error){response=json({error:error.message},503);}
+   }
   }else if(url.pathname==="/ws")response=await handleVless(request,env);
-  else if(url.pathname==="/health")response=json({ok:true,service:"VolveEdge",transport:"vless-ws-tls",relayConfigured:!!env.RELAY_URL&&!!env.RELAY_SHARED_SECRET});
+  else if(url.pathname==="/health")response=json({ok:true,service:"VolveEdge",transport:"vless-ws-tls",databaseConfigured:!!env.DB,relayConfigured:!!env.RELAY_URL&&!!env.RELAY_SHARED_SECRET});
   else if(env.ASSETS)response=await env.ASSETS.fetch(request);
   else response=new Response("VolveEdge assets are not configured",{status:503});
   return cors(request,response);
