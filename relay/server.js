@@ -30,8 +30,8 @@ function parseHeader(b) {
  return {version,uuid,host,port,offset:off};
 }
 function isPrivate(ip) {
- if(net.isIP(ip)===4){const [a,b]=ip.split(".").map(Number);return a===0||a===10||a===127||a>=224||(a===100&&b>=64&&b<=127)||(a===169&&b===254)||(a===172&&b>=16&&b<=31)||(a===192&&(b===0||b===168))||(a===198&&(b===18||b===19));}
- if(net.isIP(ip)===6){const s=ip.toLowerCase();return s==="::"||s==="::1"||s.startsWith("fc")||s.startsWith("fd")||/^fe[89ab]/.test(s)||s.startsWith("ff")||s.startsWith("::ffff:");}
+ if(net.isIP(ip)===4){const [a,b,c]=ip.split(".").map(Number);return a===0||a===10||a===127||a>=224||(a===100&&b>=64&&b<=127)||(a===169&&b===254)||(a===172&&b>=16&&b<=31)||(a===192&&(b===0||b===2||b===168||b===88&&c===99))||(a===198&&(b===18||b===19||b===51&&c===100))||(a===203&&b===0&&c===113);}
+ if(net.isIP(ip)===6){const s=ip.toLowerCase();return s==="::"||s==="::1"||s.startsWith("fc")||s.startsWith("fd")||/^fe[89ab]/.test(s)||s.startsWith("ff")||s.startsWith("::ffff:")||s.startsWith("2001:db8:")||s.startsWith("2001:10:")||s.startsWith("2002:");}
  return true;
 }
 async function resolvePublic(host) {
@@ -57,7 +57,9 @@ server.on("upgrade",(req,socket,head)=>{
 wss.on("connection",ws=>{
  let pending=Buffer.alloc(0), upstream=null, ready=false, ended=false;
  const cleanup=()=>{if(ended)return;ended=true;try{upstream?.destroy();}catch{};if(ws.readyState===WebSocket.OPEN)ws.close();};
- ws.on("message",async(raw,isBinary)=>{
+ let messageQueue=Promise.resolve();
+ ws.on("message",(raw,isBinary)=>{
+  messageQueue=messageQueue.then(async()=>{
   try{
    if(!isBinary)throw new Error("Binary frames required");
    const chunk=Buffer.from(raw);
@@ -80,6 +82,7 @@ wss.on("connection",ws=>{
    }
    if(upstream&&!upstream.destroyed)upstream.write(chunk);
   }catch{cleanup();}
+  });
  });
  ws.on("close",()=>{if(!ended){ended=true;upstream?.destroy();}});
  ws.on("error",cleanup);
