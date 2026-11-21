@@ -15,6 +15,10 @@ test("blocks IPv4-mapped IPv6 even when fully expanded",()=>{
  for(const ip of ["::ffff:127.0.0.1","0:0:0:0:0:ffff:7f00:1","::ffff:0a01:0203"])assert.equal(isBlockedIp(ip),true,ip);
  assert.equal(isBlockedIp("::ffff:0808:0808"),false);
 });
+test("checks IPv4 embedded in NAT64 addresses",()=>{
+ assert.equal(isBlockedIp("64:ff9b::7f00:1"),true);
+ assert.equal(isBlockedIp("64:ff9b::0808:0808"),false);
+});
 test("blocks local names and sensitive destination ports",()=>{
  assert.equal(isBlockedDestination("router.local",443),true);
  assert.equal(isBlockedDestination("localhost",443),true);
