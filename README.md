@@ -9,14 +9,14 @@ VolveEdge is a VLESS over WebSocket + TLS TCP proxy implemented on Cloudflare Wo
 1. Click **Deploy to Cloudflare** at the top of this page and authorize Cloudflare and GitHub.
 2. Select your Cloudflare account and confirm the Worker project.
 3. Set `ADMIN_TOKEN` to a long random secret (32+ characters). Save it securely; the admin page cannot recover it.
-4. Confirm the Worker has a D1 database binding named `DB`. The database should be named `volveedge`.
-5. Complete deployment and open `https://YOUR-WORKER.workers.dev/health`. Expect JSON with `ok: true` and `databaseConfigured: true`.
+4. Confirm the Worker has a D1 database binding named `DB`. Cloudflare's deploy flow should provision the D1 database from `wrangler.toml`.
+5. Complete deployment. Open `https://YOUR-WORKER.workers.dev/health`. Expect JSON with `ok: true` and `databaseConfigured: true`.
 
 If the deploy flow does not create the D1 database automatically, create one in Cloudflare Dashboard → Storage & databases → D1. Bind it to this Worker with variable name `DB` and database name `volveedge`.
 
-## Initialize the database
+## Database migration
 
-From a local clone, run:
+The deployment command runs `wrangler deploy` first so the D1 resource is provisioned, then applies the D1 migration. If you are using the Deploy to Cloudflare button, make sure its deploy command is set to the package `deploy` script. If you need to apply the migration manually from a local clone:
 
 ```bash
 npm install
@@ -24,11 +24,11 @@ npx wrangler login
 npx wrangler d1 migrations apply DB --remote
 ```
 
-This applies the SQL migration that creates the required tables. If the migration has already been applied successfully, do not run manual SQL to recreate them.
+The migration creates the required `users`, `settings`, and `sessions` tables. Do not manually recreate tables if the migration already succeeded.
 
 ## Configure the admin secret
 
-In Cloudflare Dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets, add `ADMIN_TOKEN` as a **Secret**. Use the same value entered during deployment. Do not put it in source code or commit it.
+If it was not collected during deployment, go to Cloudflare Dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets and add `ADMIN_TOKEN` as a **Secret**. Use a long random value (32+ characters). Do not put it in source code or commit it.
 
 ## Create users and connect
 
@@ -46,7 +46,7 @@ The subscription is a complete sing-box configuration, not just an outbound frag
 - `/sub/USER-UUID` — complete sing-box JSON for an enabled user.
 - `/ws` — VLESS WebSocket endpoint.
 
-A healthy `/health` response proves only that the Worker responds and has a D1 binding. It does **not** prove a tunnel works. You must test with a real sing-box client from a separate network and confirm TCP traffic passes.
+A healthy `/health` response proves only that the Worker responds and has a D1 binding. It does **not** prove a tunnel works. You must test with a real sing-box client from a separate network and confirm that TCP traffic passes.
 
 ## Local development and deploy
 
@@ -57,11 +57,7 @@ npm test
 npm run dev
 ```
 
-For a production deployment from a trusted local clone, ensure `wrangler.toml` contains the real D1 database ID and `ADMIN_TOKEN` is configured as a Cloudflare secret, then run:
-
-```bash
-npm run deploy
-```
+For a production deployment from a trusted local clone, run `npm run deploy`. It deploys the Worker first (allowing Wrangler to provision D1), then applies the remote migration. Keep `ADMIN_TOKEN` configured as a Cloudflare secret.
 
 Never commit `.dev.vars`, `.env`, admin tokens, user UUIDs, or relay secrets.
 
