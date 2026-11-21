@@ -17,6 +17,6 @@ export async function deleteUser(env,id) {
 }
 export async function subscription(env,uuid) {
  const user=await env.DB.prepare("SELECT name,uuid,enabled FROM users WHERE uuid=?").bind(uuid).first();
- if(!user||!user.enabled)return null;
+ if(!user||user.enabled!==1)return null;
  return user;
 }
