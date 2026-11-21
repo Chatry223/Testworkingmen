@@ -1,1 +1,16 @@
-<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VolveEdge</title><link rel="stylesheet" href="/styles.css"><main><h1>VolveEdge</h1><p>مدیریت کاربران و اشتراک‌ها</p><a href="/admin">ورود به پنل مدیریت</a></main></html>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>VolveEdge | اتصال سریع</title><link rel="stylesheet" href="/styles.css"></head>
+<body><main class="shell">
+ <header><div class="brandmark">VE</div><div><h1>VolveEdge</h1><p class="muted">اتصال ساده، امن و سریع</p></div><span class="status"><i></i> Worker online</span></header>
+ <section class="panel"><h2>آدرس Worker شما</h2><p class="muted">این آدرس به‌صورت خودکار از همین صفحه شناسایی شده است.</p><div class="copyline"><input id="worker" readonly><button id="copyWorker" class="secondary">کپی آدرس</button></div><p id="workerHint" class="hint"></p></section>
+ <section class="panel"><h2>ساخت تنظیمات اتصال</h2><label for="uuid">شناسه اشتراک (UUID)</label><input id="uuid" dir="ltr" autocomplete="off" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+ <div class="actions"><button id="make">ساخت لینک و تنظیمات</button></div><div id="result" hidden><label>لینک اشتراک</label><div class="copyline"><input id="subUrl" readonly dir="ltr"><button id="copySub" class="secondary">کپی</button></div><div class="actions"><button id="download" class="secondary">دانلود تنظیمات sing-box</button></div></div><p id="message" class="hint" role="status"></p></section>
+ <footer><a href="/admin.html">ورود مدیر</a><span>VolveEdge · VLESS / WebSocket / TLS</span></footer>
+</main><script>
+const $=id=>document.getElementById(id), origin=location.origin.replace(/\/$/,"");$("worker").value=origin;
+$("copyWorker").onclick=async()=>{await navigator.clipboard.writeText(origin);$("workerHint").textContent="آدرس Worker کپی شد."};
+$("make").onclick=()=>{const id=$("uuid").value.trim();if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)){$("message").textContent="UUID معتبر وارد کن.";return;}const url=origin+"/sub/"+encodeURIComponent(id);$("subUrl").value=url;$("result").hidden=false;$("message").textContent="لینک آماده است؛ آن را در کلاینت سازگار وارد کن یا فایل تنظیمات را دانلود کن."};
+$("copySub").onclick=async()=>{await navigator.clipboard.writeText($("subUrl").value);$("message").textContent="لینک اشتراک کپی شد."};
+$("download").onclick=()=>{location.href=$("subUrl").value};
+</script></body></html>
