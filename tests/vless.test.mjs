@@ -12,12 +12,12 @@ function ipv4Header({ command = 1, host = [1,2,3,4], port = 443 } = {}) {
   return b;
 }
 
-test("parses a VLESS IPv4 TCP header", () => {
+test("parses a VLESS IPv4 TCP header and formats UUID for D1 lookup", () => {
   const h = parseVlessHeader(ipv4Header());
   assert.equal(h.host, "1.2.3.4");
   assert.equal(h.port, 443);
   assert.equal(h.offset, 26);
-  assert.equal(h.id, "0102030405060708090a0b0c0d0e0f10");
+  assert.equal(h.id, "01020304-0506-0708-090a-0b0c0d0e0f10");
 });
 
 test("returns null for a fragmented header", () => {
