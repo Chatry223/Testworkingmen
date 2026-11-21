@@ -38,19 +38,18 @@ export function isBlockedIp(ip) {
   const v6=parseIPv6(ip);
   if(!v6)return ip.includes(":");
   const [a,b,c,d,e,f,g,h]=v6;
-  const allZero=v6.every(x=>x===0);
-  const loopback=v6.slice(0,7).every(x=>x===0)&&h===1;
-  if(allZero||loopback)return true;
+  if(v6.every(x=>x===0)||(v6.slice(0,7).every(x=>x===0)&&h===1))return true;
   if((a&0xfe00)===0xfc00||(a&0xffc0)===0xfe80||(a&0xff00)===0xff00)return true;
   if(a===0x2001&&b===0x0db8)return true;
   if(a===0x2001&&(b&0xfff0)===0x0010)return true;
   if(a===0x2002)return true;
-  if(a===0x0064&&b===0xff9b&&c===0&&d===0&&e===0&&f===0&&g===0&&h===1)return true;
   const mapped=v6.slice(0,5).every(x=>x===0)&&v6[5]===0xffff;
-  if(mapped){
+  const nat64=v6.slice(0,6).every((x,i)=>x===[0x0064,0xff9b,0,0,0,0][i]);
+  if(mapped||nat64){
     const embedded=[v6[6]>>8,v6[6]&255,v6[7]>>8,v6[7]&255];
     return isBlockedIp(embedded.join("."));
   }
+  if(a===0x0064&&b===0xff9b&&(c&0xff00)===0x0100)return true;
   return false;
 }
 
