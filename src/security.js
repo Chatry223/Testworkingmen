@@ -5,8 +5,9 @@ export function json(data,status=200,headers={}) {
 export function cors(request, response) {
  if (response.status === 101) return response;
  const origin=request.headers.get("Origin");
+ const requestOrigin=new URL(request.url).origin;
  const h=new Headers(response.headers);
- if (origin) h.set("access-control-allow-origin",origin);
+ if (origin && origin===requestOrigin) h.set("access-control-allow-origin",requestOrigin);
  h.set("vary","Origin");
  h.set("access-control-allow-methods","GET,POST,DELETE,OPTIONS");
  h.set("access-control-allow-headers","content-type,authorization");
