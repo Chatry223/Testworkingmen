@@ -8,14 +8,14 @@ function isBlockedIp(ip) {
     const [a,b,c]=parts.map(Number);
     return a===0||a===10||a===127||a>=224||
       (a===100&&b>=64&&b<=127)||(a===169&&b===254)||
-      (a===172&&b>=16&&b<=31)||(a===192&&(b===0||b===168))||
+      (a===172&&b>=16&&b<=31)||(a===192&&(b===0||b===168||b===88&&c===99))||
       (a===198&&(b===18||b===19||b===51&&c===100))||
       (a===203&&b===0&&c===113);
   }
   if(value.includes(":")){
     return value==="::"||value==="::1"||value.startsWith("fc")||
       value.startsWith("fd")||/^fe[89ab]/.test(value)||value.startsWith("ff")||
-      value.startsWith("2001:db8:")||value.startsWith("::ffff:");
+      value.startsWith("2001:db8:")||value.startsWith("2001:10:")||value.startsWith("2002:")||value.startsWith("::ffff:");
   }
   return false;
 }
