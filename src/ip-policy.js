@@ -49,7 +49,7 @@ export function isBlockedIp(ip) {
     const embedded=[v6[6]>>8,v6[6]&255,v6[7]>>8,v6[7]&255];
     return isBlockedIp(embedded.join("."));
   }
-  if(a===0x0064&&b===0xff9b&&(c&0xff00)===0x0100)return true;
+  if(a===0x0064&&b===0xff9b&&c===0x0001)return true;
   return false;
 }
 
