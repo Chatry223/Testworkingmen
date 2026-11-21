@@ -1,6 +1,6 @@
 {
   "name": "volveedge",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,13 +12,7 @@
   "cloudflare": {
     "bindings": {
       "ADMIN_TOKEN": {
-        "description": "Required: create a long random admin password. Keep it private; this protects the admin API."
-      },
-      "RELAY_URL": {
-        "description": "Optional: WebSocket URL of your independent VPS relay, e.g. wss://relay.example.com/ws. Leave empty to use Cloudflare only."
-      },
-      "RELAY_SHARED_SECRET": {
-        "description": "Optional secret shared by the Worker and VPS relay. Use the same random 32+ character value in both places. Never publish it."
+        "description": "Required: a long random admin secret (at least 32 characters). Keep it private."
       }
     }
   },
