@@ -17,7 +17,7 @@ function isBlockedIp(ip) {
       value.startsWith("fd")||/^fe[89ab]/.test(value)||value.startsWith("ff")||
       value.startsWith("2001:db8:")||value.startsWith("::ffff:");
   }
-  return true;
+  return false;
 }
 
 function isBlockedDestination(host,port) {
